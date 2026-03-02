@@ -1,5 +1,8 @@
-from src.power import power_function
-from src.constants import SAMPLE_CONSTANT
+import json
+import tempfile
+
+from models.task_contract import TaskContract
+from resources.file_resource import FileTaskResource
 
 
 def main() -> None:
@@ -8,13 +11,16 @@ def main() -> None:
     :return: Данная функция ничего не возвращает
     """
 
-    target, degree = map(int, input("Введите два числа разделенные пробелом: ").split(" "))
+    with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
+        json.dump([{"id": 1, "name": "Test1"},
+                   {"id": 2, "name": "Test2"}], tmp)
+        path = tmp.name
 
-    result = power_function(target=target, power=degree)
+    resources: list[TaskContract] = [FileTaskResource(path)]
 
-    print(result)
+    for item in resources:
+        print(list(item.get_tasks()))
 
-    print(SAMPLE_CONSTANT)
 
 if __name__ == "__main__":
     main()
