@@ -7,7 +7,7 @@ from src.models.task import Task
 from src.models.task_contract import TaskContract
 
 
-class TaskManager(UserList):
+class TaskManager(UserList[Task]):
     def __init__(self, tasks: list[Task] | None = None) -> None:
         if tasks is None:
             tasks = []

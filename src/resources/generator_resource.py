@@ -25,7 +25,7 @@ class GeneratorTaskResource:
 
     def get_tasks(self) -> Iterable[Task]:
         """
-        Метод для получения сгенерированных задач.А
+        Метод для получения сгенерированных задач.
         :return: Возвращает итератор, который предоставляет объекты Task.
         """
         generated_tasks = self.generate_tasks()

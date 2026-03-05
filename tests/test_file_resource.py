@@ -31,4 +31,4 @@ def test_invalid_json_format(fs: FakeFilesystem):
 
 def test_file_not_found():
     with pytest.raises(FileNotFoundError):
-        FileTaskResource("non_existent_file.json")
+        list(FileTaskResource("non_existent_file.json").get_tasks())

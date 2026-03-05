@@ -15,7 +15,7 @@ class TaskMapper:
         if "id" not in data:
             raise InvalidMappingForTask("id")
         if "payload" not in data:
-            raise InvalidMappingForTask("id")
+            raise InvalidMappingForTask("payload")
         task_id = data["id"]
         payload = data["payload"]
 
