@@ -12,17 +12,17 @@ from src.task_manager import TaskManager
 
 def main() -> None:
     """
-    Обязательная составляющая программ, которые сдаются. Является точкой входа в приложение
+    Функция, которая является точкой входа в приложение
     :return: Данная функция ничего не возвращает
     """
 
     with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
-        id1 = uuid.uuid4().int
+        id1 = uuid.uuid4().hex
         json.dump([{"id": id1, "payload": "Test1"},
-                   {"id": uuid.uuid4().int, "t": []}], tmp, indent=4)
+                   {"id": uuid.uuid4().hex, "t": []}], tmp, indent=4)
         path = tmp.name
 
-    resources: list[TaskContract] = [FileTaskResource(path), GeneratorTaskResource(2), ApiTaskResource(path)]
+    resources: list[TaskContract] = [FileTaskResource(path), GeneratorTaskResource(2), ApiTaskResource("google.com")]
 
     task_manager = TaskManager()
     for resource in resources:

@@ -1,3 +1,4 @@
+import uuid
 from typing import Any
 
 from src.common.exceptions import InvalidMappingForTask
@@ -12,11 +13,7 @@ class TaskMapper:
         :param data: Словарь, содержащий данные для создания Task.
         :return: Объект Task, созданный на основе данных из словаря.
         """
-        if "id" not in data:
-            raise InvalidMappingForTask("id")
-        if "payload" not in data:
-            raise InvalidMappingForTask("payload")
-        task_id = data["id"]
-        payload = data["payload"]
+        task_id = data.get("id", uuid.uuid4().hex)
+        payload = data.get("payload", None)
 
         return Task(id=task_id, payload=payload)

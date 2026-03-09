@@ -6,18 +6,18 @@ from src.resources.file_resource import FileTaskResource
 
 
 def test_multi_file_resource(fs: FakeFilesystem):
-    fs.create_file("test.json", contents='[{"id": 1, "payload": "Test1"}, {"id": 2, "payload": []}]')
+    fs.create_file("test.json", contents='[{"id": "1", "payload": "Test1"}, {"id": "2", "payload": []}]')
     tasks = list(FileTaskResource("test.json").get_tasks())
     assert len(tasks) == 2
-    assert tasks[0].id == 1
+    assert tasks[0].id == "1"
     assert tasks[1].payload == []
 
 
 def test_single_file_resource(fs: FakeFilesystem):
-    fs.create_file("test.json", contents='{"id": 1, "payload": "Test1"}')
+    fs.create_file("test.json", contents='{"id": "1", "payload": "Test1"}')
     tasks = list(FileTaskResource("test.json").get_tasks())
     assert len(tasks) == 1
-    assert tasks[0].id == 1
+    assert tasks[0].id == "1"
     assert tasks[0].payload == "Test1"
 
 

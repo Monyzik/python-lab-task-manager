@@ -4,5 +4,5 @@ from typing import Any
 
 @dataclass
 class Task:
-    id: int
+    id: str
     payload: Any

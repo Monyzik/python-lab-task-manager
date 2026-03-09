@@ -10,11 +10,11 @@ def test_api_resource(monkeypatch: MonkeyPatch):
     resource = ApiTaskResource("https://hello_world")
     list(resource.get_tasks())
     monkeypatch.setattr(src.resources.api_resource.ApiTaskResource, 'get_tasks_from_api',
-                        lambda x: [{"id": 1, "payload": "Task 1"}])
+                        lambda x: [{"id": "1", "payload": "Task 1"}])
     tasks = list(resource.get_tasks())
     assert len(tasks) == 1
     assert tasks[0].payload == "Task 1"
-    assert tasks[0].id == 1
+    assert tasks[0].id == "1"
 
 
 def test_invalid_response_format(monkeypatch: MonkeyPatch):

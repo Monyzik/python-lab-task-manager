@@ -21,7 +21,7 @@ class GeneratorTaskResource:
         Метод для генерации задач.
         :return: Возвращает список словарей.
         """
-        return [{"id": uuid.uuid4().int, "payload": choice(self.payload_samples)} for _ in range(self.task_count)]
+        return [{"id": uuid.uuid4().hex, "payload": choice(self.payload_samples)} for _ in range(self.task_count)]
 
     def get_tasks(self) -> Iterable[Task]:
         """

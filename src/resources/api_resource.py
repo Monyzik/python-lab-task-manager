@@ -20,7 +20,7 @@ class ApiTaskResource:
         """
         response = []
         for _ in range(self.task_count):
-            response.append({"id": uuid.uuid4().int, "payload": choice(self.payload_samples)})
+            response.append({"id": uuid.uuid4().hex, "payload": choice(self.payload_samples)})
         return response
 
     def get_tasks(self) -> Iterable[Task]:
