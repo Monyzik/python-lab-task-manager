@@ -13,6 +13,11 @@ class TaskMapper:
         :param data: Словарь, содержащий данные для создания Task.
         :return: Объект Task, созданный на основе данных из словаря.
         """
+        if "id" not in data:
+            raise InvalidMappingForTask("id")
+        if "payload" not in data:
+            raise InvalidMappingForTask("payload")
+
         task_id = data.get("id", uuid.uuid4().hex)
         payload = data.get("payload", None)
 
