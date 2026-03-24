@@ -1,4 +1,4 @@
-# Лабораторная работа №1
+# Лабораторная работа №2
 
 ### Запуск
 
@@ -15,32 +15,43 @@ python -m src.main
 ### Архитектура проекта:
 
 ```
-├── common
-│   ├── config.py
-│   ├── constants.py
-│   └── exceptions.py
-├── models
-│   ├── task.py
-│   ├── task_contract.py
-│   └── task_mapper.py
-├── resources
-│   ├── api_resource.py
-│   ├── file_resource.py
-│   └── generator_resource.py
-├── main.py
-└── task_manager.py
+.
+├── common/
+│   ├── config.py             # Логирование
+│   ├── constants.py          # Наборы payload-примеров
+│   └── exceptions.py         # Кастомные исключения проекта
+├── models/
+│   ├── descriptors.py        # Data/non-data дескрипторы
+│   ├── task.py               # Доменная модель Task
+│   ├── task_contract.py      # Протокол источника задач
+│   ├── task_mapper.py        # Маппинг dict -> Task
+│   └── task_states.py        # Статусы задачи
+├── resources/
+│   ├── api_resource.py       # Источник задач (API-заглушка)
+│   ├── file_resource.py      # Источник задач из JSON
+│   └── generator_resource.py # Источник задач-генератор
+├── main.py                   # Точка входа
+└── task_manager.py           # Коллекция и операции над Task
 ```
 
 ### Документация
 
-Задача имеет вид:
+#### Модель `Task`
 
-```python
-@dataclass
-class Task:
-    id: int
-    payload: Any
-```
+Задача имеет следующие поля:
+
+- id — уникальный идентификатор (неизменяемый)
+- description — описание задачи (строка)
+- priority — важность (целое число от 0 до 10)
+- state — статус задачи (TaskState enum)
+- created_at — дата создания (неизменяемый)
+
+#### Дескрипторы
+
+- `TypedFieldDescriptor` - **data descriptor** (`__get__` + `__set__`), проверяет тип поля.
+- `PriorityFieldDescriptor` - **data descriptor**, наследуется от `TypedFieldDescriptor` и добавляет проверку диапазона.
+- `CreatedAtFieldDescriptor` - **non-data descriptor** (`__get__` без `__set__`), возвращает время создания.
+
 
 Все источники задач используют единый интерфейс:
 
@@ -51,12 +62,11 @@ class TaskContract(Protocol):
         ...
 ```
 
-В данной лабораторной работе реализованы следующие источники задач:
+Реализованные источники:
 
-- **ApiTaskResource** - получает задачи из API, в данном случае заглушка, задачи просто генерируются с помощью
-  генератора, который возвращает словари задач.
-- **FileTaskResource** - получает задачи из **json файла**, который массив из словарей.
-- **GeneratorTaskResource** - генерирует задачи с помощью генератора, который возвращает словари задач.
+- `FileTaskResource` - читает JSON (один объект или список объектов).
+- `GeneratorTaskResource` - генерирует задачи на основе `TASK_TEXT_SAMPLE`.
+- `ApiTaskResource` - имитирует API-ответ и возвращает задачи.
 
 Преобразование словарей задач в объекты **Task** происходит с помощью **TaskMapper** и метода **to_task**.
 

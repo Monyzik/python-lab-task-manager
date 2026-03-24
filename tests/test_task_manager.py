@@ -3,26 +3,28 @@ from pyfakefs.fake_filesystem import FakeFilesystem
 
 from src.common.exceptions import InvalidResourceType, TaskManagerException
 from src.models.task import Task
+from src.models.task_mapper import TaskMapper
 from src.resources.file_resource import FileTaskResource
 from src.task_manager import TaskManager
 
 
 def test_task_manager(fs: FakeFilesystem):
     task_manager = TaskManager()
-    fs.create_file("test.json", contents='[{"id": "1", "payload": "Test1"}, {"id": "2", "payload": []}]')
+    fs.create_file("test.json", contents='[{"id": "1", "payload": {}}, {"id": "2", "payload": {}}]')
     file_resource = FileTaskResource("test.json")
     task_manager.add_tasks_from_resource(file_resource)
     assert len(task_manager.data) == 2
     assert task_manager.data[0].id == "1"
     task_manager.remove_task(task_manager.data[0].id)
-    assert task_manager[0].payload != "Test1"
+    assert task_manager[0].id != "1"
     assert len(task_manager.data) == 1
     popped_task = task_manager.pop(0)
     assert popped_task.id == "2"
     assert len(task_manager.data) == 0
-    task_manager = TaskManager([Task(id="1", payload="Test1")])
+    task_manager = TaskManager([Task(task_id="1", description="hello world")])
     assert len(task_manager.data) == 1
     assert task_manager.data[0].id == "1"
+    assert task_manager.data[0].description == "hello world"
     task_manager.add_tasks_from_resource(file_resource)
     assert len(task_manager.data) == 2
 
@@ -48,6 +50,6 @@ def test_invalid_element_type():
 
 
 def test_remove_non_existent_task():
-    task_manager = TaskManager([Task(id="1", payload="Test1")])
-    removed_task = task_manager.remove_task(999)
-    assert removed_task is None
+    task_manager = TaskManager([TaskMapper.to_task({"id": "1", "payload": {}})])
+    task_manager.remove_task(999)
+    assert len(task_manager) == 1

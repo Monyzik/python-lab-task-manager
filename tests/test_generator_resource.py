@@ -2,19 +2,21 @@ import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
 import src
+from src.common.constants import TASK_TEXT_SAMPLE
 from src.common.exceptions import InvalidConfigurationForResource
+from src.models.task_states import TaskStates
 from src.resources.generator_resource import GeneratorTaskResource
 
 
 def test_generator_resource(monkeypatch: MonkeyPatch):
-    resource = GeneratorTaskResource(10, ["Task 0", "Task 1", "Task 2"])
+    resource = GeneratorTaskResource(10, TASK_TEXT_SAMPLE[1:3])
     tasks = list(resource.get_tasks())
     assert len(tasks) == 10
     monkeypatch.setattr(src.resources.generator_resource.GeneratorTaskResource, "generate_tasks",
-                        lambda x: [{"id": "1", "payload": "Task 1"}])
+                        lambda x: [{"id": "1", "payload": TASK_TEXT_SAMPLE[0]}])
     tasks = list(resource.get_tasks())
     assert len(tasks) == 1
-    assert tasks[0].payload == "Task 1"
+    assert tasks[0].state == TaskStates.BACKLOG
     assert tasks[0].id == "1"
 
 

@@ -1,8 +1,10 @@
 import json
 import tempfile
 import uuid
+from random import choice
 
 from src.common.config import logger
+from src.common.constants import TASK_TEXT_SAMPLE
 from src.models.task_contract import TaskContract
 from src.resources.file_resource import FileTaskResource
 from src.resources.api_resource import ApiTaskResource
@@ -18,8 +20,8 @@ def main() -> None:
 
     with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
         id1 = uuid.uuid4().hex
-        json.dump([{"id": id1, "payload": "Test1"},
-                   {"id": uuid.uuid4().hex, "t": []}], tmp, indent=4)
+        json.dump([{"id": id1, "payload": choice(TASK_TEXT_SAMPLE)},
+                   {"id": uuid.uuid4().hex, "payload": {"state": "nfhjs"}}], tmp, indent=4)
         path = tmp.name
 
     resources: list[TaskContract] = [FileTaskResource(path), GeneratorTaskResource(2), ApiTaskResource("google.com")]
@@ -30,6 +32,7 @@ def main() -> None:
             task_manager.add_tasks_from_resource(resource)
         except Exception as e:
             logger.error(f"Ошибка при добавлении задач из ресурса {resource.__class__.__name__}: {e}")
+
     task_manager.remove_task(id1)
     task_manager.pop(1)
 

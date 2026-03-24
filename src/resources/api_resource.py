@@ -2,16 +2,17 @@ import uuid
 from random import choice, randint
 from typing import Iterable, Any
 
+from src.common.constants import TASK_TEXT_SAMPLE
 from src.common.exceptions import InvalidApiResponseFormat
 from src.models.task import Task
 from src.models.task_mapper import TaskMapper
 
 
 class ApiTaskResource:
-    def __init__(self, path: str):
+    def __init__(self, path: str, payload_samples: list = TASK_TEXT_SAMPLE):
         self.task_count = randint(1, 10)
         self.path = path
-        self.payload_samples = [f"Sample payload {i} from {path}" for i in range(1, 6)]
+        self.payload_samples = payload_samples
 
     def get_tasks_from_api(self) -> list[dict[str, Any]]:
         """
