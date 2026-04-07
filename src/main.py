@@ -9,7 +9,7 @@ from src.models.task_contract import TaskContract
 from src.resources.file_resource import FileTaskResource
 from src.resources.api_resource import ApiTaskResource
 from src.resources.generator_resource import GeneratorTaskResource
-from src.task_manager import TaskManager
+from src.task_queue import TaskQueue
 
 
 def main() -> None:
@@ -26,15 +26,16 @@ def main() -> None:
 
     resources: list[TaskContract] = [FileTaskResource(path), GeneratorTaskResource(2), ApiTaskResource("google.com")]
 
-    task_manager = TaskManager()
+    task_manager = TaskQueue()
     for resource in resources:
         try:
             task_manager.add_tasks_from_resource(resource)
         except Exception as e:
             logger.error(f"Ошибка при добавлении задач из ресурса {resource.__class__.__name__}: {e}")
-
-    task_manager.remove_task(id1)
-    task_manager.pop(1)
+    print(*task_manager.filter(lambda t: t.is_important))
+    filtered = task_manager.filter_by_priority(1, 4)
+    for task in filtered:
+        print(task)
 
 
 if __name__ == "__main__":

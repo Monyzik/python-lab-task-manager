@@ -53,5 +53,5 @@ class Task:
         """
         return self.priority > 5
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"Task(id={self.id}, description={self.description}, priority={self.priority}, state={self.state.value})"
