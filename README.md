@@ -26,12 +26,13 @@ python -m src.main
 │   ├── task_contract.py      # Протокол источника задач
 │   ├── task_mapper.py        # Маппинг dict -> Task
 │   ├── task_states.py        # Статусы задачи
-│   └── task_view.py          # Ленивое представление и фильтры
+│   └── task_stream.py        # Повторно итерируемый поток задач
 ├── resources/
 │   ├── api_resource.py       # Источник задач (API-заглушка)
 │   ├── file_resource.py      # Источник задач из JSON
-│   └── generator_resource.py # Источник задач-генератор
-├── task_queue.py             # Очередь задач
+│   ├── generator_resource.py # Источник задач-генератор
+│   └── multi_task_resource.py# Композитный источник задач
+├── task_queue.py             # Ленивая коллекция задач
 └── main.py                   # Точка входа
 ```
 
@@ -53,21 +54,13 @@ python -m src.main
 - PriorityFieldDescriptor - data descriptor, наследуется от TypedFieldDescriptor и добавляет проверку диапазона.
 - CreatedAtFieldDescriptor - non-data descriptor, возвращает время создания.
 
-#### TaskView
+#### TaskQueue
 
-TaskView - ленивое представление задач:
+`TaskQueue` — это лениво итерируемая коллекция задач, которая позволяет строить цепочки фильтров. Она использует
+`TaskStream` для получения данных.
 
-- хранит источник и условия фильтрации;
-- применяет условия только в момент итерации (yield);
-- поддерживает композицию фильтров через filter(...).
-
-#### TaskQueue реализует очередь задач:
-
-- enqueue(task) - добавление в хвост;
-- dequeue() - удаление из начала за O(1);
-- add_tasks_from_resource(...) - для добавления задач из источников.
-- filter_by_state - ленивый фильтр по статусу, возвращает TaskView.
-- filter_by_priority - ленивый фильтр по приоритету, возвращает TaskView.
+**Фильтрация**: Методы `filter()`, `filter_by_state()` и `filter_by_priority()` возвращают новый экземпляр `TaskQueue`
+с добавленным условием, не выполняя реальной фильтрации до начала итерации.
 
 #### Источники задач
 
@@ -82,8 +75,9 @@ class TaskContract(Protocol):
 
 Реализованные источники:
 
-- FileTaskResource - читает JSON (один объект или список объектов).
-- GeneratorTaskResource - генерирует задачи на основе `TASK_TEXT_SAMPLE`.
-- ApiTaskResource - имитирует API-ответ и возвращает задачи.
+- `FileTaskResource` - читает JSON (один объект или список объектов).
+- `GeneratorTaskResource` - генерирует задачи на основе `TASK_TEXT_SAMPLE`.
+- `ApiTaskResource` - имитирует API-ответ и возвращает задачи.
+- `MultiTaskResource` - источник, который объединяет несколько других источников в один.
 
 Преобразование словарей задач в объекты **Task** происходит с помощью **TaskMapper** и метода **to_task**.
