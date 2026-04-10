@@ -14,16 +14,6 @@ class TaskQueue(TaskView):
         self._data = deque(self.validate(task) for task in tasks or ())
         super().__init__(self)
 
-    def enqueue(self, task: Task) -> None:
-        if not isinstance(task, Task):
-            raise InvalidTaskType(Task.__name__)
-        self._data.append(task)
-
-    def dequeue(self) -> Task:
-        if len(self) == 0:
-            raise TaskManagerException("Невозможно удалить задачу из пустой очереди.")
-        return self._data.popleft()
-
     def __iter__(self) -> Iterator[Task]:
         return iter(self._data)
 
@@ -35,15 +25,24 @@ class TaskQueue(TaskView):
     def __len__(self) -> int:
         return len(self._data)
 
-    def filter_by_state(self, state: TaskStates) -> TaskView:
-        if not isinstance(state, TaskStates):
-            raise TaskManagerException("Неверный тип состояния задачи. Ожидается TaskStates.")
-        return self.filter(lambda t: t.state == state)
+    def enqueue(self, task: Task) -> None:
+        """
+        Добавляет элемент в конец очереди.
+        :param task: Задача, которую надо добавить в конец очереди.
+        :return: Ничего не возвращает.
+        """
+        if not isinstance(task, Task):
+            raise InvalidTaskType(Task.__name__)
+        self._data.append(task)
 
-    def filter_by_priority(self, min_priority: int, max_priority: int) -> TaskView:
-        if not isinstance(min_priority, int) or not isinstance(max_priority, int):
-            raise TaskManagerException("Неверный тип приоритета. Ожидается int.")
-        return self.filter(lambda t: min_priority <= t.priority <= max_priority)
+    def dequeue(self) -> Task:
+        """
+        Удаляет элемент из начала очереди.
+        :return: Возвращает удаленный элемент из начала очереди.
+        """
+        if len(self) == 0:
+            raise TaskManagerException("Невозможно удалить задачу из пустой очереди.")
+        return self._data.popleft()
 
     @property
     def tasks_ids(self) -> list[str]:
