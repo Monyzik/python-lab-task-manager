@@ -28,6 +28,10 @@ class TaskQueue(AsyncIterable[Task]):
         self._conditions = conditions
 
     async def worker(self) -> None:
+        """
+        Функция для обработки задач из очереди.
+        :return: Ничего не возвращает.
+        """
         while True:
             task = await self._queue.get()
             try:
@@ -41,6 +45,11 @@ class TaskQueue(AsyncIterable[Task]):
                 self._queue.task_done()
 
     async def run(self, source: AsyncIterable[Task]) -> None:
+        """
+        Функция для запуска обработки задач из источника.
+        :param source: Источник задач.
+        :return: Ничего не возвращает.
+        """
         workers = [asyncio.create_task(self.worker()) for _ in range(self._workers_number)]
         try:
             async for task in source:

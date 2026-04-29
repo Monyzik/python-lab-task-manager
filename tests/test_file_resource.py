@@ -5,34 +5,41 @@ from src.common.exceptions import InvalidJsonFormat
 from src.resources.file_resource import FileTaskResource
 
 
-def test_multi_file_resource(fs: FakeFilesystem):
+@pytest.mark.asyncio
+async def test_multi_file_resource(fs: FakeFilesystem):
     fs.create_file("test.json",
                    contents='''[{"id": "1", "payload": {"description": "Написать тесты", "priority": 8, "state": "In review"}},
                     {"id": "2", "payload": {}}]''')
-    tasks = list(FileTaskResource("test.json").get_tasks())
+    tasks = [task async for task in FileTaskResource("test.json").get_tasks()]
     assert len(tasks) == 2
     assert tasks[0].id == "1"
     assert tasks[1].description == ""
 
+    async with FileTaskResource("test.json") as tasks:
+        assert len([task async for task in tasks.get_tasks()]) == 2
 
-def test_single_file_resource(fs: FakeFilesystem):
+
+@pytest.mark.asyncio
+async def test_single_file_resource(fs: FakeFilesystem):
     fs.create_file("test.json",
                    contents='{"id": "1", "payload": {"description": "Написать тесты", "priority": 8, "state": "In review"}}')
-    tasks = list(FileTaskResource("test.json").get_tasks())
+    tasks = [task async for task in FileTaskResource("test.json").get_tasks()]
     assert len(tasks) == 1
     assert tasks[0].id == "1"
     assert tasks[0].priority == 8
 
 
-def test_invalid_json_format(fs: FakeFilesystem):
+@pytest.mark.asyncio
+async def test_invalid_json_format(fs: FakeFilesystem):
     fs.create_file("test1.json", contents='123')
     with pytest.raises(InvalidJsonFormat):
-        list(FileTaskResource("test1.json").get_tasks())
+        tasks = [task async for task in FileTaskResource("test1.json").get_tasks()]
     fs.create_file("test2.json", contents='[{"id": "1", "payload": {"Test1": 1}}, 123]')
     with pytest.raises(InvalidJsonFormat):
-        list(FileTaskResource("test2.json").get_tasks())
+        tasks = [task async for task in FileTaskResource("test2.json").get_tasks()]
 
 
-def test_file_not_found():
+@pytest.mark.asyncio
+async def test_file_not_found():
     with pytest.raises(FileNotFoundError):
-        list(FileTaskResource("non_existent_file.json").get_tasks())
+        tasks = [task async for task in FileTaskResource("non_existent_file.json").get_tasks()]

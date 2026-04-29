@@ -37,6 +37,8 @@ class ApiTaskResource:
         """
         if self._raw is None:
             self._raw = self.get_tasks_from_api()
+        if not isinstance(self._raw, Iterable):
+            raise InvalidApiResponseFormat("Неправильный формат ответа от API. Ожидается список словарей")
         for task in self._raw:
             if not isinstance(task, dict):
                 raise InvalidApiResponseFormat("Неправильный формат ответа от API. Ожидается список словарей")
