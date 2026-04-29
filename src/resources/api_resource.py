@@ -1,6 +1,6 @@
 import uuid
 from random import choice, randint
-from typing import Iterable, Any
+from typing import Iterable, Any, AsyncIterable
 
 from src.common.constants import TASK_TEXT_SAMPLE
 from src.common.exceptions import InvalidApiResponseFormat
@@ -10,27 +10,34 @@ from src.models.task_mapper import TaskMapper
 
 class ApiTaskResource:
     def __init__(self, path: str, payload_samples: list = TASK_TEXT_SAMPLE):
-        self.task_count = randint(1, 10)
+        self._task_count = randint(1, 10)
         self.path = path
-        self.payload_samples = payload_samples
+        self._payload_samples = payload_samples
+        self._raw = None
 
-    def get_tasks_from_api(self) -> list[dict[str, Any]]:
+    async def __aenter__(self):
+        self._raw = self.get_tasks_from_api()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        self._raw = None
+
+    def get_tasks_from_api(self) -> Iterable[dict[str, Any]]:
         """
         Метод для получения задач из API.
         :return: Возвращает список словарей.
         """
-        response = []
-        for _ in range(self.task_count):
-            response.append({"id": uuid.uuid4().hex, "payload": choice(self.payload_samples)})
-        return response
+        for _ in range(self._task_count):
+            yield {"id": uuid.uuid4().hex, "payload": choice(self._payload_samples)}
 
-    def get_tasks(self) -> Iterable[Task]:
+    async def get_tasks(self) -> AsyncIterable[Task]:
         """
         Метод для получения задач из API и преобразования их в объекты Task.
         :return: Возвращает итератор, который предоставляет объекты Task.
         """
-        response = self.get_tasks_from_api()
-        if not isinstance(response, list):
-            raise InvalidApiResponseFormat("Неправильный формат ответа от API. Ожидается список словарей")
-        for task in response:
+        if self._raw is None:
+            self._raw = self.get_tasks_from_api()
+        for task in self._raw:
+            if not isinstance(task, dict):
+                raise InvalidApiResponseFormat("Неправильный формат ответа от API. Ожидается список словарей")
             yield TaskMapper.to_task(task)

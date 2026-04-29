@@ -1,5 +1,5 @@
 import uuid
-from typing import Iterable, Any
+from typing import Iterable, Any, AsyncIterable
 
 from src.common.constants import TASK_TEXT_SAMPLE
 from src.common.exceptions import InvalidConfigurationForResource
@@ -13,21 +13,31 @@ class GeneratorTaskResource:
     def __init__(self, task_count: int = 1, payload_samples: list = TASK_TEXT_SAMPLE):
         if task_count < 1:
             raise InvalidConfigurationForResource("Количество задач должно быть не меньше 1.")
-        self.task_count = task_count
-        self.payload_samples = payload_samples
+        self._task_count = task_count
+        self._payload_samples = payload_samples
+        self._raw = None
 
-    def generate_tasks(self) -> list[dict[str, Any]]:
+    async def __aenter__(self):
+        self._raw = self.generate_tasks()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        self._raw = None
+
+    def generate_tasks(self) -> Iterable[dict[str, Any]]:
         """
         Метод для генерации задач.
         :return: Возвращает список словарей.
         """
-        return [{"id": uuid.uuid4().hex, "payload": choice(self.payload_samples)} for _ in range(self.task_count)]
+        for _ in range(self._task_count):
+            yield {"id": uuid.uuid4().hex, "payload": choice(self._payload_samples)}
 
-    def get_tasks(self) -> Iterable[Task]:
+    async def get_tasks(self) -> AsyncIterable[Task]:
         """
         Метод для получения сгенерированных задач.
         :return: Возвращает итератор, который предоставляет объекты Task.
         """
-        generated_tasks = self.generate_tasks()
-        for task in generated_tasks:
+        if self._raw is None:
+            self._raw = self.generate_tasks()
+        for task in self._raw:
             yield TaskMapper.to_task(task)
